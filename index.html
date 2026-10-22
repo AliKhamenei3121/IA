@@ -1,111 +1,184 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Referencias de elementos de la interfaz original
-    const homeView = document.getElementById('homeView');
-    const chatView = document.getElementById('chatView');
-    const chatMessages = document.getElementById('chatMessages');
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory AI</title>
+    <link rel="icon" type="image/svg+xml" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/svgs/solid/microchip.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Hamburger button for mobile -->
+    <button class="hamburger-btn" id="hamburgerBtn">
+        <i class="fa-solid fa-bars"></i>
+    </button>
 
-    const homeChatInput = document.getElementById('homeChatInput');
-    const homeSendBtn = document.getElementById('homeSendBtn');
-    const chatChatInput = document.getElementById('chatChatInput');
-    const chatSendBtn = document.getElementById('chatSendBtn');
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span class="logo"><i class="fa-solid fa-microchip"></i></span>
+            <span class="logo-text">Memory AI</span>
+        </div>
 
-    let currentHistory = [];
+        <button class="new-btn" id="newChatBtn">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nuevo</span>
+        </button>
 
-    async function handleSend(inputElement) {
-        if (!inputElement) return;
-        const text = inputElement.value.trim();
-        if (!text) return;
+        <nav class="nav-section">
+            <div class="nav-item">
+                <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
+                <span>Preferencias</span>
+            </div>
+            <div class="nav-item" onclick="window.open('https://github.com/NostGore/Memory-AI', '_blank')">
+                <span class="nav-icon"><i class="fa-brands fa-readme"></i></span>
+                <span>Documentación</span>
+            </div>
+        </nav>
 
-        // Limpiar input
-        inputElement.value = '';
+        <div class="section-title">Historial</div>
+        <div class="history-list" id="historyList"></div>
 
-        // Mostrar vista de chat si estamos en el inicio
-        if (homeView && chatView) {
-            homeView.style.display = 'none';
-            chatView.style.display = 'flex';
-        }
+        <div class="sidebar-footer">
+            <button class="login-btn">
+                <div class="login-icon">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <span>Iniciar sesión</span>
+                <span style="margin-left: auto; color: #666;">›</span>
+            </button>
+        </div>
+    </aside>
 
-        // Agregar mensaje del usuario a la pantalla
-        appendMessage(text, 'user');
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home View -->
+        <div class="home-view" id="homeView">
 
-        // Llamar a Ollama local
-        await callOllama(text);
-    }
+            <div class="chat-container">
+                <p class="search-label">Bienvenido/a</p>
+                <h1 class="main-title" id="mainTitle">¿Qué quieres saber?</h1>
 
-    function appendMessage(text, sender) {
-        if (!chatMessages) return;
-        const messageDiv = document.createElement('divclassName'); // corregido abajo
-        
-        const div = document.createElement('div');
-        div.style.margin = '12px 0';
-        div.style.padding = '10px 14px';
-        div.style.borderRadius = '8px';
-        div.style.maxWidth = '80%';
-        div.style.wordBreak = 'break-word';
+                <div class="input-container">
+                    <div class="image-preview-container" id="imagePreviewContainer">
+                        <div class="image-preview" id="imagePreview">
+                            <img id="previewImg" src="" alt="Preview">
+                            <button class="remove-image" id="removeImage"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <div class="document-preview-container" id="documentPreviewContainer">
+                        <div class="document-preview">
+                            <div class="document-icon">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </div>
+                            <div class="document-info">
+                                <span class="document-name" id="documentName"></span>
+                                <span class="document-type">Documento</span>
+                            </div>
+                            <button class="remove-document" id="removeDocument"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <input type="text" class="chat-input" id="homeChatInput" placeholder="Pregunta lo que quieras">
+                    
+                    <div class="input-actions">
+                        <div class="input-left">
+                            <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx,.txt" style="display: none;">
+                            <button class="add-btn" title="Cargar imagen o archivo" onclick="document.getElementById('fileInput').click()"><i class="fa-solid fa-plus"></i></button>
+                        </div>
 
-        if (sender === 'user') {
-            div.style.background = '#2b2b2b';
-            div.style.marginLeft = 'auto';
-            div.textContent = text;
-        } else {
-            div.style.background = '#1e1e1e';
-            div.style.border = '1px solid #333';
-            div.style.marginRight = 'auto';
-            div.textContent = text;
-        }
+                        <div class="input-right">
+                            <div class="model-dropdown">
+                                <button class="model-selector" id="modelSelector">
+                                    <span id="selectedModel">Modelo</span>
+                                    <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+                                </button>
+                                <div class="model-menu" id="modelMenu"></div>
+                            </div>
+                            
+                            <button class="voice-btn" id="homeSendBtn" title="Enviar">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        chatMessages.appendChild(div);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+        <!-- Chat View -->
+        <div class="chat-view" id="chatView">
+            <div class="chat-messages" id="chatMessages"></div>
 
-    async function callOllama(text) {
-        // Indicador de "Pensando..."
-        const loadingDiv = document.createElement('div');
-        loadingDiv.id = 'loadingIndicator';
-        loadingDiv.style.margin = '12px 0';
-        loadingDiv.style.color = '#888';
-        loadingDiv.textContent = 'Llama 3 está pensando...';
-        chatMessages.appendChild(loadingDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+            <div style="padding: 0 24px 24px;">
+                <div class="input-container">
+                    <div class="image-preview-container" id="chatImagePreviewContainer">
+                        <div class="image-preview" id="chatImagePreview">
+                            <img id="chatPreviewImg" src="" alt="Preview">
+                            <button class="remove-image" id="chatRemoveImage"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <div class="document-preview-container" id="chatDocumentPreviewContainer">
+                        <div class="document-preview">
+                            <div class="document-icon">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </div>
+                            <div class="document-info">
+                                <span class="document-name" id="chatDocumentName"></span>
+                                <span class="document-type">Documento</span>
+                            </div>
+                            <button class="remove-document" id="chatRemoveDocument"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <input type="text" class="chat-input" id="chatChatInput" placeholder="Solicitar seguimiento">
+                    
+                    <div class="input-actions">
+                        <div class="input-left">
+                            <input type="file" id="chatFileInput" accept="image/*,.pdf,.doc,.docx,.txt" style="display: none;">
+                            <button class="add-btn" title="Cargar imagen o archivo" onclick="document.getElementById('chatFileInput').click()"><i class="fa-solid fa-plus"></i></button>
+                        </div>
 
-        try {
-            const response = await fetch('http://localhost:11434/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: 'llama3',
-                    messages: [{ role: 'user', content: text }],
-                    stream: false
-                })
-            });
+                        <div class="input-right">
+                            <div class="model-dropdown">
+                                <button class="model-selector" id="chatModelSelector">
+                                    <span id="chatSelectedModel">Modelo</span>
+                                    <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+                                </button>
+                                <div class="model-menu" id="chatModelMenu"></div>
+                            </div>
+                            
+                            <button class="voice-btn" id="chatSendBtn" title="Enviar">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
-            const data = await response.json();
-            document.getElementById('loadingIndicator')?.remove();
+    <!-- Preferences Modal -->
+    <div class="modal-overlay" id="preferencesModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Preferencias</h3>
+                <button class="modal-close" id="closePreferencesModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-content">
+                <div class="preference-item">
+                    <span>Animación de escritura</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="animationToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            if (data.message && data.message.content) {
-                appendMessage(data.message.content, 'ai');
-            } else {
-                appendMessage('No se obtuvo respuesta de Llama 3.', 'ai');
-            }
-        } catch (error) {
-            document.getElementById('loadingIndicator')?.remove();
-            appendMessage(`Error de conexión con Ollama local: Asegúrate de tener la terminal abierta. (${error.message})`, 'ai');
-        }
-    }
-
-    // Eventos para el botón y la tecla Enter en la pantalla de inicio
-    if (homeSendBtn && homeChatInput) {
-        homeSendBtn.addEventListener('click', () => handleSend(homeChatInput));
-        homeChatInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') handleSend(homeChatInput);
-        });
-    }
-
-    // Eventos para el botón y la tecla Enter en la pantalla de chat activo
-    if (chatSendBtn && chatChatInput) {
-        chatSendBtn.addEventListener('click', () => handleSend(chatChatInput));
-        chatChatInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') handleSend(chatChatInput);
-        });
-    }
-});
+    <script src="indicator.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 
