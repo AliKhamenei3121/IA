@@ -231,7 +231,6 @@ async function loadModels() {
 }
 
 function selectModel(item, model, menu) {
-    // Update both selectors (home and chat view)
     document.getElementById('selectedModel').textContent = model.name;
     document.getElementById('chatSelectedModel').textContent = model.name;
     selectedModelData = model;
@@ -307,7 +306,6 @@ setupRemoveHandlers(chatRemoveImageBtn, chatImagePreviewContainer, chatRemoveDoc
 
 // Copy to clipboard function
 function copyToClipboard(text, button) {
-    // Strip markdown formatting
     const plainText = text
         .replace(/#{1,6}\s/g, '')
         .replace(/\*\*(.*?)\*\*/g, '$1')
@@ -335,7 +333,6 @@ async function sendMessage(input) {
     const text = input.value.trim();
     if (!text && !currentFileBase64) return;
 
-    // Create new session if needed (first message of a new chat)
     if (!currentSessionId) {
         currentSessionId = MemoryManager.createSession();
         addToHistory(text || 'Archivo adjunto', currentSessionId);
@@ -351,7 +348,6 @@ async function sendMessage(input) {
     addMessageToChat(message);
     switchToChatView();
 
-    // Save to memory
     MemoryManager.addMessage(currentSessionId, 'user', text, message.image);
 
     input.value = '';
@@ -394,19 +390,14 @@ function addMessageToChat(message) {
                     <button class="message-action-btn copy-btn" title="Copiar"><i class="fa-regular fa-copy"></i></button>
                 </div>`;
 
-    // Add copy functionality
     const copyBtn = div.querySelector('.copy-btn');
     copyBtn.addEventListener('click', () => {
         copyToClipboard(message.text || '', copyBtn);
     });
 
-    // Add edit functionality
     const editBtn = div.querySelector('.edit-btn');
     editBtn.addEventListener('click', () => {
-        // Fill the chat input with the message text
         chatChatInput.value = message.text || '';
-
-        // Remove this user message and the AI response from DOM
         const userMsg = div;
         const aiMsg = userMsg.nextElementSibling;
         if (aiMsg && aiMsg.classList.contains('message-ai')) {
@@ -414,22 +405,18 @@ function addMessageToChat(message) {
         }
         userMsg.remove();
 
-        // Remove from chatHistory (remove last user message and AI response)
         if (chatHistory.length > 0) {
-            chatHistory.pop(); // Remove last user message
+            chatHistory.pop();
         }
 
-        // Remove last AI response from memory
         if (currentSessionId && conversations[currentSessionId]) {
             const messages = conversations[currentSessionId].messages;
-            // Remove last assistant message
             for (let i = messages.length - 1; i >= 0; i--) {
                 if (messages[i].role === 'assistant') {
                     messages.splice(i, 1);
                     break;
                 }
             }
-            // Remove last user message
             for (let i = messages.length - 1; i >= 0; i--) {
                 if (messages[i].role === 'user') {
                     messages.splice(i, 1);
@@ -439,7 +426,6 @@ function addMessageToChat(message) {
             MemoryManager.save(conversations);
         }
 
-        // Focus on input
         chatChatInput.focus();
     });
 
@@ -447,11 +433,14 @@ function addMessageToChat(message) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Universal AI API Handler
+// Universal AI API Handler con soporte para Ollama local
 const AIProviderDetector = {
     detect(host) {
         const url = host.toLowerCase();
 
+        if (url.includes('localhost') || url.includes('11434') || url.includes('ollama')) {
+            return 'ollama';
+        }
         if (url.includes('generativelanguage.googleapis.com') || url.includes('gemini')) {
             return 'gemini';
         }
@@ -491,146 +480,40 @@ const AIProviderDetector = {
         if (url.includes('replicate.com') || url.includes('replicate')) {
             return 'replicate';
         }
-        if (url.includes('cloud.google.com') || url.includes('vertex')) {
-            return 'vertex';
-        }
-        if (url.includes('bedrock') || url.includes('aws')) {
-            return 'bedrock';
-        }
 
         return 'openai-compatible';
     },
 
     getAuthConfig(provider, host, key) {
         const configs = {
+            ollama: {
+                url: host,
+                headers: { 'Content-Type': 'application/json' },
+                authType: 'none'
+            },
             gemini: {
                 url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-goog-api-key': key
-                },
+                headers: { 'Content-Type': 'application/json', 'X-goog-api-key': key },
                 authType: 'header'
             },
             openai: {
                 url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
                 authType: 'bearer'
             },
             groq: {
                 url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
                 authType: 'bearer'
             },
             anthropic: {
                 url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': key,
-                    'anthropic-version': '2023-06-01'
-                },
+                headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
                 authType: 'header'
-            },
-            cohere: {
-                url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
-                authType: 'bearer'
-            },
-            mistral: {
-                url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
-                authType: 'bearer'
-            },
-            deepseek: {
-                url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
-                authType: 'bearer'
-            },
-            together: {
-                url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
-                authType: 'bearer'
-            },
-            openrouter: {
-                url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`,
-                    'HTTP-Referer': window.location.href
-                },
-                authType: 'bearer'
-            },
-            huggingface: {
-                url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
-                authType: 'bearer'
-            },
-            fireworks: {
-                url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
-                authType: 'bearer'
-            },
-            perplexity: {
-                url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
-                authType: 'bearer'
-            },
-            replicate: {
-                url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
-                authType: 'bearer'
-            },
-            vertex: {
-                url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-goog-api-key': key
-                },
-                authType: 'header'
-            },
-            bedrock: {
-                url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
-                authType: 'bearer'
             },
             'openai-compatible': {
                 url: host,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
                 authType: 'bearer'
             }
         };
@@ -642,7 +525,7 @@ const AIProviderDetector = {
     }
 };
 
-// Call AI API
+// Call AI API incluyendo Ollama
 async function callGeminiAPI(text, imageBase64) {
     if (!selectedModelData) {
         addAIMessage('Por favor, selecciona un modelo primero.');
@@ -654,67 +537,19 @@ async function callGeminiAPI(text, imageBase64) {
     try {
         const provider = AIProviderDetector.detect(selectedModelData.host);
         const authConfig = AIProviderDetector.getAuthConfig(provider, selectedModelData.host, selectedModelData.key);
-        const isGeminiNative = AIProviderDetector.isNativeGemini(selectedModelData.host);
 
-        let url, headers, requestBody;
+        let url = authConfig.url;
+        let headers = authConfig.headers;
+        let requestBody;
 
-        if (isGeminiNative) {
-            // Gemini native format
-            url = authConfig.url;
-            headers = authConfig.headers;
-
-            // Get chat history from memory for context
-            const memoryHistoryGemini = currentSessionId ?
-                MemoryManager.getMessages(currentSessionId) : [];
-
-            const contents = [];
-
-            // Add history to contents
-            memoryHistoryGemini.forEach(msg => {
-                if (msg.role === 'user' || msg.role === 'assistant') {
-                    contents.push({
-                        role: msg.role === 'assistant' ? 'model' : 'user',
-                        parts: [{ text: msg.content }]
-                    });
-                }
-            });
-
-            // Add current message
-            if (imageBase64) {
-                const base64Data = imageBase64.split(',')[1];
-                const mimeType = imageBase64.split(';')[0].split(':')[1];
-
-                contents.push({
-                    parts: [
-                        { text: text || 'Describe esta imagen' },
-                        {
-                            inline_data: {
-                                mime_type: mimeType,
-                                data: base64Data
-                            }
-                        }
-                    ]
-                });
-            } else {
-                contents.push({
-                    parts: [{ text: text }]
-                });
-            }
-
+        if (provider === 'ollama') {
+            // Estructura directa para Ollama local
             requestBody = {
-                systemInstruction: { parts: [{ text: AI_PROMPT.system }] },
-                contents: contents,
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 2048
-                }
+                model: selectedModelData.model || 'llama3',
+                messages: [{ role: 'user', content: text }],
+                stream: false
             };
         } else {
-            // OpenAI-compatible format (works for most providers)
-            url = authConfig.url;
-            headers = authConfig.headers;
-
-            // Get chat history from memory for context
             const memoryHistory = currentSessionId ?
                 MemoryManager.getMessages(currentSessionId).map(m => ({
                     role: m.role,
@@ -723,46 +558,12 @@ async function callGeminiAPI(text, imageBase64) {
 
             const messages = AI_PROMPT.getPrompt(text, memoryHistory);
 
-            if (imageBase64) {
-                const base64Data = imageBase64.split(',')[1];
-                const mimeType = imageBase64.split(';')[0].split(':')[1];
-
-                if (provider === 'anthropic') {
-                    messages[messages.length - 1].content = [
-                        { type: 'text', text: text || 'Describe esta imagen' },
-                        {
-                            type: 'image',
-                            source: {
-                                type: 'base64',
-                                media_type: mimeType,
-                                data: base64Data
-                            }
-                        }
-                    ];
-                } else {
-                    messages[messages.length - 1].content = [
-                        { type: 'text', text: text || 'Describe esta imagen' },
-                        {
-                            type: 'image_url',
-                            image_url: {
-                                url: `data:${mimeType};base64,${base64Data}`
-                            }
-                        }
-                    ];
-                }
-            }
-
             requestBody = {
                 model: selectedModelData.model || 'default',
                 messages: messages,
                 temperature: 0.7,
                 max_tokens: 2048
             };
-
-            if (provider === 'anthropic') {
-                requestBody.system = AI_PROMPT.system;
-                requestBody.max_tokens = 2048;
-            }
         }
 
         const response = await fetch(url, {
@@ -774,31 +575,23 @@ async function callGeminiAPI(text, imageBase64) {
         const data = await response.json();
         removeLoadingMessage();
 
-        // Handle different response formats
-        if (data.choices && data.choices[0] && data.choices[0].message) {
+        // Manejo de respuestas según el proveedor
+        if (provider === 'ollama' && data.message && data.message.content) {
+            addAIMessage(data.message.content);
+        } else if (data.choices && data.choices[0] && data.choices[0].message) {
             addAIMessage(data.choices[0].message.content);
-        }
-        else if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        } else if (data.candidates && data.candidates[0] && data.candidates[0].content) {
             addAIMessage(data.candidates[0].content.parts[0].text);
-        }
-        else if (data.content && data.content[0] && data.content[0].text) {
+        } else if (data.content && data.content[0] && data.content[0].text) {
             addAIMessage(data.content[0].text);
-        }
-        else if (data.generations && data.generations[0] && data.generations[0].text) {
-            addAIMessage(data.generations[0].text);
-        }
-        else if (data.output && data.output.text) {
-            addAIMessage(data.output.text);
-        }
-        else if (data.error) {
-            addAIMessage(`Error: ${data.error.message || data.error.type || JSON.stringify(data.error)}`);
-        }
-        else {
+        } else if (data.error) {
+            addAIMessage(`Error: ${data.error.message || JSON.stringify(data.error)}`);
+        } else {
             addAIMessage('No se pudo obtener una respuesta.');
         }
     } catch (error) {
         removeLoadingMessage();
-        addAIMessage(`Error de conexión: ${error.message}`);
+        addAIMessage(`Error de conexión con Ollama: asegúrate de tener abierta la terminal con 'ollama run llama3'. (${error.message})`);
     }
 }
 
@@ -824,7 +617,6 @@ function removeLoadingMessage() {
 }
 
 function addAIMessage(text, useAnimation = true) {
-    // Save AI response to memory
     if (currentSessionId) {
         MemoryManager.addMessage(currentSessionId, 'assistant', text);
     }
@@ -844,18 +636,12 @@ function addAIMessage(text, useAnimation = true) {
     actions.className = 'message-actions';
     actions.innerHTML = `
                 <button class="message-action-btn copy-btn" title="Copiar"><i class="fa-regular fa-copy"></i></button>
-                <button class="message-action-btn regenerate-btn" title="Regenerar"><i class="fa-solid fa-rotate"></i></button>
-                <div class="message-ai" style="display: flex; gap: 8px; margin-left: 8px;">
-                    <button class="message-action-btn" title="Me gusta"><i class="fa-regular fa-thumbs-up"></i></button>
-                    <button class="message-action-btn" title="No me gusta"><i class="fa-regular fa-thumbs-down"></i></button>
-                </div>`;
+                <button class="message-action-btn regenerate-btn" title="Regenerar"><i class="fa-solid fa-rotate"></i></button>`;
 
-    // Add copy functionality
     actions.querySelector('.copy-btn').addEventListener('click', () => {
         copyToClipboard(text, actions.querySelector('.copy-btn'));
     });
 
-    // Add regenerate functionality
     actions.querySelector('.regenerate-btn').addEventListener('click', () => {
         regenerateMessage(div);
     });
@@ -865,7 +651,6 @@ function addAIMessage(text, useAnimation = true) {
     div.appendChild(actions);
     chatMessages.appendChild(div);
 
-    // Check animation preference
     const animationEnabled = localStorage.getItem('ai_chat_animation') !== 'false';
     if (useAnimation && animationEnabled) {
         skipBtn.style.display = 'block';
@@ -877,27 +662,21 @@ function addAIMessage(text, useAnimation = true) {
 }
 
 function regenerateMessage(aiMessageDiv) {
-    // Remove the last AI message from DOM
     aiMessageDiv.remove();
 
-    // Remove the last AI message from memory
     if (currentSessionId && conversations[currentSessionId]) {
         const messages = conversations[currentSessionId].messages;
-        // Find and remove the last assistant message
         for (let i = messages.length - 1; i >= 0; i--) {
             if (messages[i].role === 'assistant') {
                 messages.splice(i, 1);
                 break;
             }
         }
-        // Save updated conversations
         MemoryManager.save(conversations);
     }
 
-    // Get the last user message
     const lastUserMessage = chatHistory[chatHistory.length - 1];
     if (lastUserMessage) {
-        // Call API again with the last user message
         callGeminiAPI(lastUserMessage.text, lastUserMessage.image);
     }
 }
@@ -906,9 +685,8 @@ function typewriterEffect(element, text, skipBtn) {
     const rawText = text;
     let isAnimating = true;
 
-    // Split text into chunks (words or small groups of characters)
     const words = rawText.split(/(\s+)/);
-    const chunkSize = 2; // words per chunk
+    const chunkSize = 2;
     const chunks = [];
 
     for (let i = 0; i < words.length; i += chunkSize) {
@@ -917,7 +695,6 @@ function typewriterEffect(element, text, skipBtn) {
 
     element.innerHTML = '';
 
-    // Create a wrapper for fade effect
     const wrapper = document.createElement('div');
     wrapper.style.opacity = '0';
     wrapper.style.transition = 'opacity 0.3s ease';
@@ -947,35 +724,19 @@ function typewriterEffect(element, text, skipBtn) {
         currentText += chunks[chunkIndex];
         chunkIndex++;
 
-        // Render markdown with current text
         wrapper.innerHTML = AI_PROMPT.renderMarkdown(currentText);
 
-        // Add cursor at the end
         const cursor = document.createElement('span');
         cursor.className = 'typing-cursor';
         cursor.innerHTML = '|';
         wrapper.appendChild(cursor);
 
         wrapper.style.opacity = '1';
-
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        // Variable speed based on content
-        const lastChar = currentText.slice(-1);
-        let delay = 50;
-
-        if (lastChar === '.' || lastChar === '!' || lastChar === '?') {
-            delay = 300;
-        } else if (lastChar === ',') {
-            delay = 150;
-        } else if (lastChar === '\n') {
-            delay = 100;
-        }
-
-        setTimeout(addChunk, delay);
+        setTimeout(addChunk, 50);
     }
 
-    // Start animation
     setTimeout(addChunk, 100);
 }
 
@@ -1061,13 +822,7 @@ function loadConversation(sessionId) {
                         <div class="message-bubble">${renderedText}</div>
                         <div class="message-actions">
                             <button class="message-action-btn copy-btn" title="Copiar"><i class="fa-regular fa-copy"></i></button>
-                            <button class="message-action-btn" title="Regenerar"><i class="fa-solid fa-rotate"></i></button>
-                            <div class="message-ai" style="display: flex; gap: 8px; margin-left: 8px;">
-                                <button class="message-action-btn" title="Me gusta"><i class="fa-regular fa-thumbs-up"></i></button>
-                                <button class="message-action-btn" title="No me gusta"><i class="fa-regular fa-thumbs-down"></i></button>
-                            </div>
                         </div>`;
-            // Add copy functionality
             div.querySelector('.copy-btn').addEventListener('click', () => {
                 copyToClipboard(msg.content, div.querySelector('.copy-btn'));
             });
@@ -1095,7 +850,6 @@ function switchToHomeView() {
     localStorage.removeItem('ai_chat_current_session');
 }
 
-// Event listeners
 homeSendBtn.addEventListener('click', () => sendMessage(homeChatInput));
 chatSendBtn.addEventListener('click', () => sendMessage(chatChatInput));
 
@@ -1114,7 +868,6 @@ newChatBtn.addEventListener('click', () => {
     }
 });
 
-// Title Animation
 const mainTitle = document.getElementById('mainTitle');
 const titles = [
     '¿Qué quieres saber?',
@@ -1135,7 +888,9 @@ function animateTitle() {
         charIndex++;
     }
 
-    mainTitle.innerHTML = currentTitle.substring(0, charIndex) + '<span class="cursor"></span>';
+    if (mainTitle) {
+        mainTitle.innerHTML = currentTitle.substring(0, charIndex) + '<span class="cursor"></span>';
+    }
 
     let speed = isDeleting ? 50 : 100;
 
@@ -1151,12 +906,12 @@ function animateTitle() {
     setTimeout(animateTitle, speed);
 }
 
-animateTitle();
+if (mainTitle) {
+    animateTitle();
+}
 
-// Load history on startup
 loadHistoryFromStorage();
 
-// Restore view state on page load
 const savedView = localStorage.getItem('ai_chat_current_view');
 const savedSession = localStorage.getItem('ai_chat_current_session');
 if (savedView === 'chat' && savedSession) {
