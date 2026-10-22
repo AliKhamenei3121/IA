@@ -1,184 +1,184 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory AI</title>
-    <link rel="icon" type="image/svg+xml" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/svgs/solid/microchip.svg">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory AI</title>
+    <link rel="icon" type="image/svg+xml" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/svgs/solid/microchip.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Overlay for mobile -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    
-    <!-- Hamburger button for mobile -->
-    <button class="hamburger-btn" id="hamburgerBtn">
-        <i class="fa-solid fa-bars"></i>
-    </button>
+    <!-- Overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Hamburger button for mobile -->
+    <button class="hamburger-btn" id="hamburgerBtn">
+        <i class="fa-solid fa-bars"></i>
+    </button>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <span class="logo"><i class="fa-solid fa-microchip"></i></span>
-            <span class="logo-text">Memory AI</span>
-        </div>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span class="logo"><i class="fa-solid fa-microchip"></i></span>
+            <span class="logo-text">Memory AI</span>
+        </div>
 
-        <button class="new-btn" id="newChatBtn">
-            <i class="fa-solid fa-plus"></i>
-            <span>Nuevo</span>
-        </button>
+        <button class="new-btn" id="newChatBtn">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nuevo</span>
+        </button>
 
-        <nav class="nav-section">
-            <div class="nav-item">
-                <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
-                <span>Preferencias</span>
-            </div>
-            <div class="nav-item" onclick="window.open('https://github.com/NostGore/Memory-AI', '_blank')">
-                <span class="nav-icon"><i class="fa-brands fa-readme"></i></span>
-                <span>Documentación</span>
-            </div>
-        </nav>
+        <nav class="nav-section">
+            <div class="nav-item">
+                <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
+                <span>Preferencias</span>
+            </div>
+            <div class="nav-item" onclick="window.open('https://github.com/NostGore/Memory-AI', '_blank')">
+                <span class="nav-icon"><i class="fa-brands fa-readme"></i></span>
+                <span>Documentación</span>
+            </div>
+        </nav>
 
-        <div class="section-title">Historial</div>
-        <div class="history-list" id="historyList"></div>
+        <div class="section-title">Historial</div>
+        <div class="history-list" id="historyList"></div>
 
-        <div class="sidebar-footer">
-            <button class="login-btn">
-                <div class="login-icon">
-                    <i class="fa-solid fa-user"></i>
-                </div>
-                <span>Iniciar sesión</span>
-                <span style="margin-left: auto; color: #666;">›</span>
-            </button>
-        </div>
-    </aside>
+        <div class="sidebar-footer">
+            <button class="login-btn">
+                <div class="login-icon">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <span>Iniciar sesión</span>
+                <span style="margin-left: auto; color: #666;">›</span>
+            </button>
+        </div>
+    </aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Home View -->
-        <div class="home-view" id="homeView">
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home View -->
+        <div class="home-view" id="homeView">
 
-            <div class="chat-container">
-                <p class="search-label">Bienvenido/a</p>
-                <h1 class="main-title" id="mainTitle">¿Qué quieres saber?</h1>
+            <div class="chat-container">
+                <p class="search-label">Bienvenido/a</p>
+                <h1 class="main-title" id="mainTitle">¿Qué quieres saber?</h1>
 
-                <div class="input-container">
-                    <div class="image-preview-container" id="imagePreviewContainer">
-                        <div class="image-preview" id="imagePreview">
-                            <img id="previewImg" src="" alt="Preview">
-                            <button class="remove-image" id="removeImage"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                    </div>
-                    <div class="document-preview-container" id="documentPreviewContainer">
-                        <div class="document-preview">
-                            <div class="document-icon">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </div>
-                            <div class="document-info">
-                                <span class="document-name" id="documentName"></span>
-                                <span class="document-type">Documento</span>
-                            </div>
-                            <button class="remove-document" id="removeDocument"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                    </div>
-                    <input type="text" class="chat-input" id="homeChatInput" placeholder="Pregunta lo que quieras">
-                    
-                    <div class="input-actions">
-                        <div class="input-left">
-                            <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx,.txt" style="display: none;">
-                            <button class="add-btn" title="Cargar imagen o archivo" onclick="document.getElementById('fileInput').click()"><i class="fa-solid fa-plus"></i></button>
-                        </div>
+                <div class="input-container">
+                    <div class="image-preview-container" id="imagePreviewContainer">
+                        <div class="image-preview" id="imagePreview">
+                            <img id="previewImg" src="" alt="Preview">
+                            <button class="remove-image" id="removeImage"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <div class="document-preview-container" id="documentPreviewContainer">
+                        <div class="document-preview">
+                            <div class="document-icon">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </div>
+                            <div class="document-info">
+                                <span class="document-name" id="documentName"></span>
+                                <span class="document-type">Documento</span>
+                            </div>
+                            <button class="remove-document" id="removeDocument"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <input type="text" class="chat-input" id="homeChatInput" placeholder="Pregunta lo que quieras">
+                    
+                    <div class="input-actions">
+                        <div class="input-left">
+                            <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx,.txt" style="display: none;">
+                            <button class="add-btn" title="Cargar imagen o archivo" onclick="document.getElementById('fileInput').click()"><i class="fa-solid fa-plus"></i></button>
+                        </div>
 
-                        <div class="input-right">
-                            <div class="model-dropdown">
-                                <button class="model-selector" id="modelSelector">
-                                    <span id="selectedModel">Modelo</span>
-                                    <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
-                                </button>
-                                <div class="model-menu" id="modelMenu"></div>
-                            </div>
-                            
-                            <button class="voice-btn" id="homeSendBtn" title="Enviar">
-                                <i class="fa-solid fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        <div class="input-right">
+                            <div class="model-dropdown">
+                                <button class="model-selector" id="modelSelector">
+                                    <span id="selectedModel">Modelo</span>
+                                    <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+                                </button>
+                                <div class="model-menu" id="modelMenu"></div>
+                            </div>
+                            
+                            <button class="voice-btn" id="homeSendBtn" title="Enviar">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <!-- Chat View -->
-        <div class="chat-view" id="chatView">
-            <div class="chat-messages" id="chatMessages"></div>
+        <!-- Chat View -->
+        <div class="chat-view" id="chatView">
+            <div class="chat-messages" id="chatMessages"></div>
 
-            <div style="padding: 0 24px 24px;">
-                <div class="input-container">
-                    <div class="image-preview-container" id="chatImagePreviewContainer">
-                        <div class="image-preview" id="chatImagePreview">
-                            <img id="chatPreviewImg" src="" alt="Preview">
-                            <button class="remove-image" id="chatRemoveImage"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                    </div>
-                    <div class="document-preview-container" id="chatDocumentPreviewContainer">
-                        <div class="document-preview">
-                            <div class="document-icon">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </div>
-                            <div class="document-info">
-                                <span class="document-name" id="chatDocumentName"></span>
-                                <span class="document-type">Documento</span>
-                            </div>
-                            <button class="remove-document" id="chatRemoveDocument"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                    </div>
-                    <input type="text" class="chat-input" id="chatChatInput" placeholder="Solicitar seguimiento">
-                    
-                    <div class="input-actions">
-                        <div class="input-left">
-                            <input type="file" id="chatFileInput" accept="image/*,.pdf,.doc,.docx,.txt" style="display: none;">
-                            <button class="add-btn" title="Cargar imagen o archivo" onclick="document.getElementById('chatFileInput').click()"><i class="fa-solid fa-plus"></i></button>
-                        </div>
+            <div style="padding: 0 24px 24px;">
+                <div class="input-container">
+                    <div class="image-preview-container" id="chatImagePreviewContainer">
+                        <div class="image-preview" id="chatImagePreview">
+                            <img id="chatPreviewImg" src="" alt="Preview">
+                            <button class="remove-image" id="chatRemoveImage"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <div class="document-preview-container" id="chatDocumentPreviewContainer">
+                        <div class="document-preview">
+                            <div class="document-icon">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </div>
+                            <div class="document-info">
+                                <span class="document-name" id="chatDocumentName"></span>
+                                <span class="document-type">Documento</span>
+                            </div>
+                            <button class="remove-document" id="chatRemoveDocument"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <input type="text" class="chat-input" id="chatChatInput" placeholder="Solicitar seguimiento">
+                    
+                    <div class="input-actions">
+                        <div class="input-left">
+                            <input type="file" id="chatFileInput" accept="image/*,.pdf,.doc,.docx,.txt" style="display: none;">
+                            <button class="add-btn" title="Cargar imagen o archivo" onclick="document.getElementById('chatFileInput').click()"><i class="fa-solid fa-plus"></i></button>
+                        </div>
 
-                        <div class="input-right">
-                            <div class="model-dropdown">
-                                <button class="model-selector" id="chatModelSelector">
-                                    <span id="chatSelectedModel">Modelo</span>
-                                    <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
-                                </button>
-                                <div class="model-menu" id="chatModelMenu"></div>
-                            </div>
-                            
-                            <button class="voice-btn" id="chatSendBtn" title="Enviar">
-                                <i class="fa-solid fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+                        <div class="input-right">
+                            <div class="model-dropdown">
+                                <button class="model-selector" id="chatModelSelector">
+                                    <span id="chatSelectedModel">Modelo</span>
+                                    <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+                                </button>
+                                <div class="model-menu" id="chatModelMenu"></div>
+                            </div>
+                            
+                            <button class="voice-btn" id="chatSendBtn" title="Enviar">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
-    <!-- Preferences Modal -->
-    <div class="modal-overlay" id="preferencesModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3>Preferencias</h3>
-                <button class="modal-close" id="closePreferencesModal"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-content">
-                <div class="preference-item">
-                    <span>Animación de escritura</span>
-                    <label class="toggle">
-                        <input type="checkbox" id="animationToggle" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Preferences Modal -->
+    <div class="modal-overlay" id="preferencesModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Preferencias</h3>
+                <button class="modal-close" id="closePreferencesModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-content">
+                <div class="preference-item">
+                    <span>Animación de escritura</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="animationToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <script src="indicator.js"></script>
-    <script src="script.js"></script>
+    <script src="indicator.js"></script>
+    <script src="script.js"></script>
 </body>
-</html> 
+</html>
